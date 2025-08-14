@@ -8,6 +8,7 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.view.View;
 
+import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactRootView;
@@ -34,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Map;
 import java.util.UUID;
 
@@ -161,7 +163,13 @@ public class CodePushNativeModule extends ReactContextBaseJavaModule {
                         // has been fixed in RN 0.46.0
                         //resetReactRootViews(instanceManager);
 
-                        instanceManager.recreateReactContextInBackground();
+                        //instanceManager.recreateReactContextInBackground();
+
+                        notifyApplicationReady(null);
+                        
+                        ReactActivity activity = (ReactActivity) getCurrentActivity();
+                        Objects.requireNonNull(activity.getReactDelegate()).reload();
+
                         mCodePush.initializeUpdateAfterRestart();
                     } catch (Exception e) {
                         // The recreation method threw an unknown exception
@@ -647,10 +655,14 @@ public class CodePushNativeModule extends ReactContextBaseJavaModule {
     public void notifyApplicationReady(Promise promise) {
         try {
             mSettingsManager.removePendingUpdate();
-            promise.resolve("");
+            if(promise!=null){
+                promise.resolve("");
+            }
         } catch(CodePushUnknownException e) {
             CodePushUtils.log(e);
-            promise.reject(e);
+            if(promise!=null) {
+                promise.reject(e);
+            }
         }
     }
 
